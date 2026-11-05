@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: baleshwar-gaming
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 1 --threads 8 --timeout 120 --graceful-timeout 20 -b 0.0.0.0:$PORT app:app
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SITE_NAME
+        value: BALESHWAR GAMING
+      - key: NORMAL_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
