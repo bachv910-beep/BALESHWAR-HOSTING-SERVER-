@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ site_name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ac:{{ theme_color }};--ac-soft:{{ theme_color }}22}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08090d;font-family:'Space Grotesk',system-ui,sans-serif;color:#e8eaed;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
+
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg::before,.bg::after{content:'';position:absolute;border-radius:50%;filter:blur(120px);opacity:.35}
+.bg::before{width:600px;height:600px;background:var(--ac);top:-200px;left:-200px;animation:float1 18s ease-in-out infinite}
+.bg::after{width:520px;height:520px;background:#7c5cff;bottom:-200px;right:-150px;animation:float2 22s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(120px,80px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-100px,-70px)}}
+.noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.wrap{position:relative;z-index:5;width:100%;max-width:400px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.07);border-radius:26px;padding:40px 34px;backdrop-filter:blur(20px);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06);animation:rise .7s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+.mark{width:74px;height:74px;margin:0 auto 22px;border-radius:20px;background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 40%,#000));display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:28px;color:#08090d;box-shadow:0 14px 40px -10px var(--ac),inset 0 1px 0 rgba(255,255,255,.4);position:relative}
+.mark::after{content:'';position:absolute;inset:-6px;border-radius:26px;border:1px dashed var(--ac-soft);animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.brand{text-align:center;font-family:'Space Grotesk';font-weight:700;font-size:28px;letter-spacing:-.8px;margin-bottom:8px;background:linear-gradient(180deg,#fff,#9aa1b2);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tag{text-align:center;font-family:'JetBrains Mono';font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:3px;text-transform:uppercase;margin-bottom:32px}
+
+.lbl{font-family:'JetBrains Mono';font-size:10.5px;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:block}
+.field{position:relative;margin-bottom:16px}
+.field input{width:100%;padding:15px 16px 15px 46px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#fff;font-family:'JetBrains Mono';font-size:14px;letter-spacing:1px;outline:none;transition:all .22s}
+.field input::placeholder{color:rgba(255,255,255,.22);letter-spacing:2px}
+.field input:focus{border-color:var(--ac);background:rgba(0,0,0,.55);box-shadow:0 0 0 4px var(--ac-soft)}
+.field .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:15px;transition:color .22s}
+.field input:focus~.ic{color:var(--ac)}
+
+.btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 55%,#000));border:none;border-radius:14px;color:#08090d;font-family:'Space Grotesk';font-weight:600;font-size:14px;letter-spacing:2px;cursor:pointer;transition:all .22s;text-transform:uppercase;box-shadow:0 12px 30px -10px var(--ac),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 18px 40px -10px var(--ac),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:active{transform:translateY(0)}
+
+.err{margin-bottom:14px;padding:11px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;font-family:'JetBrains Mono';font-size:12px;color:#fca5a5;display:flex;align-items:center;gap:8px}
+.err::before{content:'!';width:16px;height:16px;border-radius:50%;background:#ef4444;color:#08090d;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+
+.foot{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;color:rgba(255,255,255,.28);letter-spacing:1.5px}
+.foot .s{display:flex;align-items:center;gap:6px}
+.foot .s i{width:6px;height:6px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;font-style:normal;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="noise"></div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="mark">{{ initials }}</div>
+    <div class="brand">{{ site_name }}</div>
+    <div class="tag">Secure Access</div>
+
+    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+
+    <form method="POST">
+      <label class="lbl">Access Key</label>
+      <div class="field">
+        <input type="password" name="password" placeholder="••••••••••" required autofocus>
+        <span class="ic">⬢</span>
+      </div>
+      <button class="btn" type="submit">Sign In</button>
+    </form>
+
+    <div class="foot">
+      <div class="s"><i></i>Encrypted</div>
+      <div>{{ site_name }}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
