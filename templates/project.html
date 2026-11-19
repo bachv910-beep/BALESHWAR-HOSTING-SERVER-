@@ -1,0 +1,76 @@
+{% extends 'base.html' %}{% block title %}{{ p.name }}{% endblock %}
+{% block top %}<div class="top"><a class="btn s" href="{{ '/admin-penel' if admin else '/dashboard' }}">←</a><div class="brand"><span>{{ p.name }}</span></div><span class="badge {{ p.live }}" id="badge">{{ p.live }}</span></div>{% endblock %}
+{% block body %}
+{% if admin %}<div class="note">Admin view · Owner: <b>{{ owner.email if owner else '?' }}</b></div>{% endif %}
+{% if p.blocked %}<div class="err">Ye project admin ne block kiya hai.</div>{% endif %}
+<div class="card"><div class="mu sm">{{ p.label }}{% if p.runtime!='static' %} · PORT {{ p.port }}{% endif %}</div>
+{% if p.url %}<div style="margin:10px 0"><label>Public link</label><a href="{{ p.url }}" target="_blank" style="word-break:break-all;font-size:13.5px">{{ p.url }}</a>
+<button class="btn s" style="margin-top:8px" data-u="{{ p.url }}" onclick="navigator.clipboard.writeText(this.dataset.u);toast('Link copy ho gaya')">Copy link</button></div>{% endif %}
+<div class="g2" style="margin-top:12px">
+{% if p.runtime!='static' %}<button class="btn p" onclick="startP()">▶ Start</button><button class="btn" onclick="stopP()">■ Stop</button><button class="btn" onclick="restartP()">⟳ Restart</button>{% endif %}
+<button class="btn d" onclick="delP()">Delete</button>
+{% if admin %}<button class="btn d" onclick="act('/api/admin/project/{{ p.id }}/block',{},'Done')">{{ 'Unblock' if p.blocked else 'Block' }}</button>{% endif %}</div></div>
+
+<div class="seg"><button data-s="console">Console</button><button data-s="files">Files</button>{% if p.runtime!='static' %}<button data-s="settings">Settings</button>{% endif %}</div>
+
+<div data-sec="console">
+{% if p.runtime=='static' %}<div class="note">Ye HTML website hai, hamesha live rehti hai. Upar link se khol sakte ho. Agar bot/Python file upload karoge to ye khud app ban jaayega aur console chalu ho jaayega.</div>
+{% else %}<div class="term" id="term">Loading…</div>
+<div class="tin"><input id="cin" placeholder="command ya password likho…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"><button class="btn p" onclick="sendIn()">Enter</button></div>
+<div class="row" style="margin-top:8px"><button class="btn s" onclick="ctrlC()">Ctrl+C</button><button class="btn s" onclick="clearL()">Clear</button></div>
+<p class="mu sm" style="margin-top:10px">Bot chal raha ho to ye text seedha bot ko jaata hai (jaise Termux me password / Enter). Band ho to likha hua command chalta hai, jaise <b>pip install telebot</b> ya <b>python main.py</b>.</p>{% endif %}
+</div>
+
+<div data-sec="files" class="hide"><div class="card">
+<div class="row" style="margin-bottom:10px"><button class="btn p s" onclick="$('fi').click()">⬆ Upload</button><button class="btn s" onclick="newFolder()">＋ Folder</button><button class="btn s" onclick="newFile()">＋ File</button></div>
+<input type="file" id="fi" multiple class="hide" onchange="upload()">
+<p class="mu sm" style="margin-bottom:10px">Kai files ek saath chun sakte ho. Sirf zip upload karo to khud extract ho jaayega.</p>
+<div class="fb" id="crumb"></div><div id="flist"></div></div></div>
+
+{% if p.runtime!='static' %}<div data-sec="settings" class="hide"><div class="card">
+<label>Main file (app.py / main.py)</label><input id="mf" value="{{ p.main_file }}" placeholder="main.py">
+<label>Custom command (khali chhodo to khud chalega)</label><input id="cmd" value="{{ p.command }}" placeholder="python main.py" autocapitalize="off">
+<label class="chk"><input type="checkbox" id="pub" {{ 'checked' if p.public }}> Public web link do (app PORT env par chalna chahiye)</label>
+<button class="btn p w" onclick="saveS()">Save</button></div></div>{% endif %}
+
+<div class="sheet" id="ed"><div class="pn"><div class="row sp" style="margin-bottom:10px"><b id="edn" style="word-break:break-all"></b><button class="btn s" onclick="closeM('ed')">✕</button></div>
+<textarea id="edt" rows="16" spellcheck="false" autocapitalize="off"></textarea><button class="btn p w" onclick="saveF()">Save</button></div></div>
+{% endblock %}
+{% block js %}<script>
+const P={{ p.id }},BACK='{{ '/admin-penel' if admin else '/dashboard' }}',STATIC={{ 'true' if p.runtime=='static' else 'false' }};
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('[data-sec]').forEach(s=>s.classList.toggle('hide',s.dataset.sec!==b.dataset.s));if(b.dataset.s=='files')loadF();if(b.dataset.s=='console'&&$('term'))poll()});
+document.querySelector('.seg button').click();
+async function startP(){const j=await act('/api/projects/'+P+'/start',{},'Start ho raha hai…',false);if(j&&j.success){document.querySelector('[data-s=console]').click();poll()}}
+async function stopP(){await act('/api/projects/'+P+'/stop',{},'Stop ho gaya',false);poll()}
+async function restartP(){await api('/api/projects/'+P+'/stop',{});setTimeout(startP,600)}
+async function delP(){const j=await act('/api/projects/'+P+'/delete',{},'Delete ho gaya',false,'Pura project delete karna hai?');if(j&&j.success)location.href=BACK}
+async function saveS(){const j=await api('/api/projects/'+P+'/settings',{main_file:$('mf').value,command:$('cmd').value,public:$('pub').checked});toast(j.success?'Saved':j.error,j.success);if(j.success)setTimeout(()=>location.reload(),500)}
+/* console */
+let hist=[],hi=0;
+async function poll(){const t=$('term');if(!t)return;const j=await fetch('/api/projects/'+P+'/logs').then(r=>r.json()).catch(()=>null);if(!j)return;
+ const near=t.scrollTop+t.clientHeight>=t.scrollHeight-40;if(t.textContent!==j.logs){t.textContent=j.logs;if(near)t.scrollTop=t.scrollHeight}
+ $('badge').textContent=j.status;$('badge').className='badge '+j.status}
+if($('term')){poll();setInterval(()=>{if(!document.hidden)poll()},1500);setTimeout(()=>{$('term').scrollTop=1e9},500)}
+async function sendIn(){const v=$('cin').value;const j=await api('/api/projects/'+P+'/input',{text:v});if(!j.success)toast(j.error,false);else{if(v){hist.push(v);hi=hist.length}$('cin').value='';setTimeout(poll,350);setTimeout(()=>{const t=$('term');t.scrollTop=t.scrollHeight},500)}}
+async function ctrlC(){const j=await api('/api/projects/'+P+'/input',{ctrl_c:true});if(!j.success)toast(j.error,false);setTimeout(poll,400)}
+async function clearL(){await api('/api/projects/'+P+'/logs/clear',{});poll()}
+if($('cin'))$('cin').addEventListener('keydown',e=>{if(e.key==='Enter')sendIn();else if(e.key==='ArrowUp'&&hist.length){hi=Math.max(0,hi-1);$('cin').value=hist[hi]}else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);$('cin').value=hist[hi]||''}});
+/* files */
+let dir='',cur='';
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const join=(d,n)=>d?d+'/'+n:n;
+async function loadF(){const j=await fetch('/api/projects/'+P+'/files?dir='+encodeURIComponent(dir)).then(r=>r.json()).catch(()=>({files:[]}));
+ const parts=dir?dir.split('/'):[];let h='<a onclick="goD(\'\')">root</a>';parts.forEach((x,i)=>{h+=' / <a onclick="goD(\''+esc(parts.slice(0,i+1).join('/'))+'\')">'+esc(x)+'</a>'});$('crumb').innerHTML=h;
+ $('flist').innerHTML=j.files.length?j.files.map(f=>{const p=join(dir,f.name);return '<div class="fr"><span>'+(f.type=='dir'?'📁':'📄')+'</span><span class="nm" data-p="'+esc(p)+'" data-t="'+f.type+'" onclick="openF(this)">'+esc(f.name)+(f.type=='file'?' <span class="mu sm">'+(f.size/1024).toFixed(1)+' KB</span>':'')+'</span>'+
+  '<button class="btn s" data-p="'+esc(p)+'" onclick="renF(this.dataset.p)">Rename</button><button class="btn s d" data-p="'+esc(p)+'" onclick="delF(this.dataset.p)">✕</button></div>'}).join(''):'<div class="mu sm">Yahan koi file nahi hai.</div>'}
+function goD(d){dir=d;loadF()}
+function openF(el){if(el.dataset.t=='dir')goD(el.dataset.p);else editF(el.dataset.p)}
+async function upload(){const fs=$('fi').files;if(!fs.length)return;const fd=new FormData();for(const f of fs)fd.append('file',f);fd.append('dir',dir);toast('Upload ho raha hai…');
+ try{const r=await fetch('/api/projects/'+P+'/upload',{method:'POST',body:fd});const j=await r.json();if(j.success){toast(j.count+' file upload'+(j.zips?' (zip extract ho gayi)':''));$('fi').value='';if(j.changed)setTimeout(()=>location.reload(),700);else loadF()}else toast(j.error,false)}catch(e){toast('Upload fail',false)}}
+async function newFolder(){const n=prompt('Folder ka naam:');if(!n)return;const j=await api('/api/projects/'+P+'/files/mkdir',{path:join(dir,n)});if(j.success)loadF();else toast(j.error,false)}
+function newFile(){const n=prompt('File ka naam (jaise main.py):');if(!n)return;cur=join(dir,n);$('edn').textContent=cur;$('edt').value='';openM('ed')}
+async function editF(p){const j=await fetch('/api/projects/'+P+'/files/view?path='+encodeURIComponent(p)).then(r=>r.json());if(!j.success)return toast(j.error,false);cur=p;$('edn').textContent=p;$('edt').value=j.content;openM('ed')}
+async function saveF(){const j=await api('/api/projects/'+P+'/files/save',{path:cur,content:$('edt').value});if(j.success){toast('Saved');closeM('ed');if(j.changed)setTimeout(()=>location.reload(),600);else loadF()}else toast(j.error,false)}
+async function renF(p){const n=prompt('Naya naam:',p.split('/').pop());if(!n)return;const j=await api('/api/projects/'+P+'/files/rename',{path:p,new:n});if(j.success)loadF();else toast(j.error,false)}
+async function delF(p){if(!confirm(p+' delete karni hai?'))return;const j=await api('/api/projects/'+P+'/files/delete',{path:p});if(j.success)loadF();else toast(j.error,false)}
+</script>{% endblock %}

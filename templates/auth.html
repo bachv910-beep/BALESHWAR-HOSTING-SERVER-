@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block title %}{{ site_name }}{% endblock %}{% block body %}
+<div class="auth"><a href="/" class="brand" style="margin-bottom:22px"><i>{{ site_name[:1] }}</i><span>{{ site_name }}</span></a>
+<h1 style="font-size:24px">{{ {'login':'Login','signup':'Account banao','admin':'Admin Login'}[mode] }}</h1>
+<p class="mu sm" style="margin-bottom:16px">{% if mode=='admin' %}{{ 'Pehli baar: jo Gmail aur password abhi daaloge wahi hamesha ke liye admin banega.' if first else 'Sirf owner ke liye.' }}{% elif mode=='signup' %}Gmail aur kam se kam 6 character ka password.{% else %}Gmail aur password daalo.{% endif %}</p>
+{% if error %}<div class="err">{{ error }}</div>{% endif %}
+<form method="POST" autocomplete="on">
+{% if mode=='signup' %}<label>Naam</label><input name="name" value="{{ name or '' }}" required maxlength="40" autocomplete="name">{% endif %}
+<label>Gmail</label><input type="email" name="email" value="{{ email or '' }}" required autocomplete="username" inputmode="email" autocapitalize="off">
+<label>Password</label><input type="password" name="password" required {% if mode=='signup' or (mode=='admin' and first) %}minlength="6"{% endif %} autocomplete="{{ 'new-password' if mode=='signup' else 'current-password' }}">
+{% if mode!='signup' %}<label class="chk"><input type="checkbox" name="remember" checked> Mujhe yaad rakho</label>{% endif %}
+<button class="btn p w">{{ {'login':'Login','signup':'Account banao','admin':'Login'}[mode] }}</button></form>
+{% if mode=='login' %}<p class="mu" style="margin-top:16px;text-align:center">Naya ho? <a href="/signup">Account banao</a></p>{% elif mode=='signup' %}<p class="mu" style="margin-top:16px;text-align:center">Account hai? <a href="/login">Login</a></p>{% endif %}
+</div>{% endblock %}

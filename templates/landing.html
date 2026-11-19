@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block top %}
+<div class="top"><div class="brand"><i>{{ site_name[:1] }}</i><span>{{ site_name }}</span></div>
+{% if session.get('uid') %}<a class="btn p s" href="/dashboard">Dashboard</a>{% else %}<a class="btn s" href="/login">Login</a><a class="btn p s" href="/signup">Sign up</a>{% endif %}</div>{% endblock %}
+{% block body %}
+<div class="hero"><h1>Apna bot aur website<br>yahan host karo</h1>
+<p class="mu">Telegram bot ho ya HTML website, file ya zip upload karo aur chalu. Console aur live logs saath me.</p>
+<div class="row" style="margin-top:18px"><a class="btn p" href="/signup">Free account banao</a><a class="btn" href="/login">Login</a></div></div>
+<h2>Kya host hota hai</h2>
+<div class="card"><h3>Bot Hosting</h3><p class="mu sm" style="margin-top:6px">Telegram / Discord / koi bhi Python ya Node.js bot. Termux jaisa console, command aur password bhi daal sakte ho. 24/7 auto-restart.</p></div>
+<div class="card"><h3>Website Hosting</h3><p class="mu sm" style="margin-top:6px">HTML, CSS, JS, JSON ya Python/Node web app. Public link milta hai jo kisi ko bhi bhej sakte ho.</p></div>
+<h2>Reviews {% if count %}<span class="mu sm">· {{ avg }} ★ ({{ count }})</span>{% endif %}</h2>
+{% for r in reviews %}<div class="card"><div class="stars">{{ '★'*r.rating }}{{ '☆'*(5-r.rating) }}</div><p style="margin:6px 0">{{ r.text or '—' }}</p><div class="mu sm">{{ r.name }}</div></div>
+{% else %}<div class="card mu sm">Abhi koi review nahi hai.</div>{% endfor %}
+{% endblock %}
