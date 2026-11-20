@@ -1,49 +1,115 @@
-{% extends 'base.html' %}{% block title %}Admin{% endblock %}
-{% block top %}<div class="top"><div class="brand"><i>A</i><span>Admin Panel</span></div><a class="btn s" href="/admin-penel/logout">Logout</a></div>{% endblock %}
-{% block body %}
-<div class="g2" style="margin-bottom:10px"><div class="stat"><b>{{ users|length }}</b><span>Users</span></div><div class="stat"><b>{{ projects|length }}</b><span>Projects</span></div>
-<div class="stat"><b>{{ live }}</b><span>Live abhi</span></div><div class="stat"><b>{{ (total_size/1048576)|round(1) }} MB</b><span>Storage</span></div></div>
-<div class="row" style="margin-bottom:6px"><span class="badge">CPU <b id="st-cpu">–</b></span><span class="badge">RAM <b id="st-ram">–</b></span><span class="badge">Disk <b id="st-disk">–</b></span></div>
-
-<div data-sec="p"><h2>Saare Projects</h2>
-{% for p in projects %}<div class="card"><div class="row sp"><h3 style="word-break:break-all">{{ p.name }}</h3><span class="badge {{ p.live }}">{{ p.live }}</span></div>
-<div class="mu sm" style="margin:4px 0">{{ p.label }}</div><div class="sm" style="word-break:break-all">👤 {{ p.owner_email or '—' }} · {{ (p.size/1024)|round(0)|int }} KB</div>
-{% if p.url %}<a class="sm" href="{{ p.url }}" target="_blank" style="word-break:break-all;display:block;margin-top:4px">{{ p.url }}</a>{% endif %}
-<div class="row" style="margin-top:10px"><a class="btn p s" href="/project/{{ p.id }}">Console / Files</a><button class="btn s d" data-n="{{ p.name }}" onclick="act('/api/projects/{{ p.id }}/delete',{},'Delete ho gaya',true,this.dataset.n+' delete karna hai?')">Delete</button></div></div>
-{% else %}<div class="card mu sm">Koi project nahi.</div>{% endfor %}</div>
-
-<div data-sec="u" class="hide"><h2>Saare Users</h2>
-{% for u in users %}<div class="card"><div class="row sp"><b>{{ u.name }}</b>{% if u.banned %}<span class="badge blocked">banned</span>{% endif %}</div>
-<div class="mu sm" style="word-break:break-all">{{ u.email }}</div><div class="mu sm" style="margin:4px 0 10px">Projects: {{ u.n }} · Last login: {{ u.last_login or '—' }}</div>
-<label>Project limit</label><div class="row" style="flex-wrap:nowrap"><input id="lim{{ u.id }}" type="number" min="0" value="{{ u.project_limit }}" style="margin:0"><button class="btn s" onclick="act('/api/admin/user/{{ u.id }}',{action:'limit',value:$('lim{{ u.id }}').value},'Limit set ho gayi')">Set</button></div>
-<div class="row" style="margin-top:10px"><button class="btn s" onclick="act('/api/admin/user/{{ u.id }}',{action:'{{ 'unban' if u.banned else 'ban' }}'},'Done')">{{ 'Unban' if u.banned else 'Ban' }}</button>
-<button class="btn s" onclick="rp({{ u.id }})">Reset password</button>
-<button class="btn s d" onclick="act('/api/admin/user/{{ u.id }}',{action:'delete'},'User delete ho gaya',true,'User aur uske SAB projects delete honge. Pakka?')">Delete</button></div></div>
-{% else %}<div class="card mu sm">Koi user nahi.</div>{% endfor %}</div>
-
-<div data-sec="r" class="hide"><h2>Reviews</h2>
-{% for r in reviews %}<div class="card"><div class="stars">{{ '★'*r.rating }}{{ '☆'*(5-r.rating) }}</div><p style="margin:6px 0">{{ r.text or '—' }}</p><div class="mu sm">{{ r.name }} · {{ r.email }}</div>
-<button class="btn s d" style="margin-top:10px" onclick="act('/api/admin/review/{{ r.id }}/delete',{},'Delete ho gaya')">Delete</button></div>{% else %}<div class="card mu sm">Koi review nahi.</div>{% endfor %}</div>
-
-<div data-sec="s" class="hide"><h2>Settings</h2><div class="card">
-<label>Naye user ki default project limit</label><input id="s_default_limit" type="number" value="{{ S.default_limit }}">
-<label>YouTube link</label><input id="s_yt" value="{{ S.yt }}" placeholder="https://youtube.com/@..." autocapitalize="off">
-<label>Instagram link</label><input id="s_ig" value="{{ S.ig }}" placeholder="https://instagram.com/..." autocapitalize="off">
-<label>Telegram link</label><input id="s_telegram" value="{{ S.telegram }}" placeholder="https://t.me/..." autocapitalize="off">
-<label>Website / koi aur link</label><input id="s_website" value="{{ S.website }}" autocapitalize="off">
-<label>WhatsApp number (country code ke saath)</label><input id="s_whatsapp" value="{{ S.whatsapp }}" inputmode="numeric">
-<label>Helpline text</label><input id="s_help_text" value="{{ S.help_text }}">
-<label>Maintenance mode</label><select id="s_maintenance"><option value="0" {{ 'selected' if S.maintenance!='1' }}>OFF</option><option value="1" {{ 'selected' if S.maintenance=='1' }}>ON (users band, admin chalega)</option></select>
-<button class="btn p w" onclick="saveSet()">Save settings</button></div></div>
+{% extends 'base.html' %}
+{% block title %}Admin{% endblock %}
+{% block top %}
+<div class="top">
+  <div class="brand"><i>A</i><span>Admin Panel</span></div>
+  <a class="btn s" href="/admin-penel/logout">Logout</a>
+</div>
 {% endblock %}
-{% block nav %}<div class="nav">
-<button data-t="p"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg>Projects</button>
-<button data-t="u"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.500"/><path d="M2.500 20c0-3.500 3-6 6.500-6s6.500 2.500 6.500 6M17 4.500a3.500 3.500 0 0 1 0 7M21.500 20c0-2.800-1.700-4.800-4-5.600"/></svg>Users</button>
-<button data-t="r"><svg viewBox="0 0 24 24"><path d="m12 3 2.700 5.500 6 .9-4.400 4.200 1 6-5.300-2.800-5.300 2.800 1-6L3.300 9.400l6-.9z"/></svg>Reviews</button>
-<button data-t="s"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.400 15a1.700 1.700 0 0 0 .3 1.800l.1.100a2 2 0 1 1-2.800 2.800l-.1-.1a1.700 1.700 0 0 0-1.800-.3 1.700 1.700 0 0 0-1 1.500V21a2 2 0 1 1-4 0v-.1a1.700 1.700 0 0 0-1.100-1.500 1.700 1.700 0 0 0-1.800.3l-.1.1a2 2 0 1 1-2.800-2.800l.1-.1a1.700 1.700 0 0 0 .3-1.800 1.700 1.700 0 0 0-1.500-1H3a2 2 0 1 1 0-4h.1a1.700 1.700 0 0 0 1.500-1.100 1.700 1.700 0 0 0-.3-1.800l-.1-.1a2 2 0 1 1 2.800-2.800l.1.1a1.700 1.700 0 0 0 1.800.3H9a1.700 1.700 0 0 0 1-1.500V3a2 2 0 1 1 4 0v.1a1.700 1.700 0 0 0 1 1.500 1.700 1.700 0 0 0 1.800-.3l.1-.1a2 2 0 1 1 2.800 2.800l-.1.1a1.700 1.700 0 0 0-.3 1.800V9a1.700 1.700 0 0 0 1.500 1H21a2 2 0 1 1 0 4h-.1a1.700 1.700 0 0 0-1.500 1z"/></svg>Settings</button></div>{% endblock %}
+
+{% block body %}
+<div class="kpi">
+  <div class="stat"><b>{{ users|length }}</b><span>Users</span></div>
+  <div class="stat"><b>{{ projects|length }}</b><span>Projects</span></div>
+  <div class="stat"><b>{{ live }}</b><span>Live abhi</span></div>
+</div>
+<div class="row" style="margin:12px 0 4px">
+  <span class="badge">CPU <b id="st-cpu" class="hv">–</b></span>
+  <span class="badge">RAM <b id="st-ram" class="hv">–</b></span>
+  <span class="badge">Disk <b id="st-disk" class="hv">–</b></span>
+  <span class="badge">Storage {{ (total_size / 1048576)|round(1) }} MB</span>
+</div>
+
+<div data-sec="p">
+  <h2>Saare Projects</h2>
+  {% for p in projects %}
+  <div class="card">
+    <div class="row sp"><h3 style="word-break:break-all">{{ p.name }}</h3><span class="badge {{ p.live }}">{{ p.live }}</span></div>
+    <div class="mu sm" style="margin:4px 0">{{ p.label }}</div>
+    <div class="sm" style="word-break:break-all">👤 {{ p.owner_email or '—' }} · {{ (p.size / 1024)|round(0)|int }} KB</div>
+    {% if p.url %}<a class="sm" href="{{ p.url }}" target="_blank" style="display:block;word-break:break-all;margin-top:6px">{{ p.url }}</a>{% endif %}
+    <div class="row" style="margin-top:12px">
+      <a class="btn p s" href="/project/{{ p.id }}">Console / Files</a>
+      <button class="btn s d" type="button" data-n="{{ p.name }}" onclick="act('/api/projects/{{ p.id }}/delete', {}, 'Delete ho gaya', true, this.dataset.n + ' delete karna hai?')">Delete</button>
+    </div>
+  </div>
+  {% else %}<div class="card mu sm">Koi project nahi.</div>{% endfor %}
+</div>
+
+<div data-sec="u" class="hide">
+  <h2>Saare Users</h2>
+  {% for u in users %}
+  <div class="card">
+    <div class="row sp"><b>{{ u.name }}</b>{% if u.banned %}<span class="badge blocked">banned</span>{% endif %}</div>
+    <div class="mu sm" style="word-break:break-all">{{ u.email }}</div>
+    <div class="mu sm" style="margin:4px 0 10px">Projects: {{ u.n }} · Last login: {{ (u.last_login or '—')[:16] }}</div>
+    <label>Project limit</label>
+    <div class="row" style="flex-wrap:nowrap">
+      <input id="lim{{ u.id }}" type="number" min="0" value="{{ u.project_limit }}" style="margin:0">
+      <button class="btn s" type="button" onclick="act('/api/admin/user/{{ u.id }}', {action: 'limit', value: $('lim{{ u.id }}').value}, 'Limit set ho gayi')">Set</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn s" type="button" onclick="act('/api/admin/user/{{ u.id }}', {action: '{{ 'unban' if u.banned else 'ban' }}'}, 'Ho gaya')">{{ 'Unban' if u.banned else 'Ban' }}</button>
+      <button class="btn s" type="button" onclick="rp({{ u.id }})">Password badlo</button>
+      <button class="btn s d" type="button" onclick="act('/api/admin/user/{{ u.id }}', {action: 'delete'}, 'User delete ho gaya', true, 'User aur uske SAB projects delete honge. Pakka?')">Delete</button>
+    </div>
+  </div>
+  {% else %}<div class="card mu sm">Koi user nahi.</div>{% endfor %}
+</div>
+
+<div data-sec="r" class="hide">
+  <h2>Reviews ({{ ratings|length }})</h2>
+  {% for r in ratings %}
+  <div class="card">
+    <div class="row sp"><span class="stars">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</span><span class="mu sm">{{ r.created[:10] }}</span></div>
+    <p style="margin:6px 0;white-space:pre-wrap">{{ r.text or '—' }}</p>
+    <div class="mu sm">{{ r.name }}{% if r.email %} · {{ r.email }}{% endif %}</div>
+    <button class="btn s d" type="button" style="margin-top:10px" onclick="act('/api/admin/rating/{{ r.id }}/delete', {}, 'Delete ho gaya')">Delete</button>
+  </div>
+  {% else %}<div class="card mu sm">Koi review nahi.</div>{% endfor %}
+</div>
+
+<div data-sec="s" class="hide">
+  <h2>Settings</h2>
+  <div class="card">
+    <label>Naye user ki default project limit</label><input id="s_default_limit" type="number" value="{{ S.default_limit }}">
+    <label>YouTube link</label><input id="s_yt" value="{{ S.yt }}" placeholder="https://youtube.com/@..." autocapitalize="off">
+    <label>Instagram link</label><input id="s_ig" value="{{ S.ig }}" placeholder="https://instagram.com/..." autocapitalize="off">
+    <label>Telegram link</label><input id="s_telegram" value="{{ S.telegram }}" placeholder="https://t.me/..." autocapitalize="off">
+    <label>Website / koi aur link</label><input id="s_website" value="{{ S.website }}" autocapitalize="off">
+    <label>WhatsApp number (country code ke saath)</label><input id="s_whatsapp" value="{{ S.whatsapp }}" inputmode="numeric">
+    <label>Helpline text</label><input id="s_help_text" value="{{ S.help_text }}">
+    <label>Maintenance mode</label>
+    <select id="s_maintenance">
+      <option value="0" {{ 'selected' if S.maintenance != '1' }}>OFF</option>
+      <option value="1" {{ 'selected' if S.maintenance == '1' }}>ON (users band, admin chalega)</option>
+    </select>
+    <button class="btn p w" type="button" onclick="saveSet()">Save settings</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block nav %}
+<div class="nav">
+  <button data-t="p"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg>Projects</button>
+  <button data-t="u"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M17 4.5a3.5 3.5 0 0 1 0 7M21.5 20c0-2.8-1.7-4.8-4-5.6"/></svg>Users</button>
+  <button data-t="r"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.4l6-.9z"/></svg>Reviews</button>
+  <button data-t="s"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</button>
+</div>
+{% endblock %}
+
 {% block js %}<script>
-tabs('.nav button','t');
-function rp(id){const v=prompt('Naya password (kam se kam 6 character):');if(v)act('/api/admin/user/'+id,{action:'reset_pw',value:v},'Password reset ho gaya',false)}
-async function saveSet(){const o={};for(const k of['default_limit','yt','ig','telegram','website','whatsapp','help_text','maintenance'])o[k]=$('s_'+k).value;
- const j=await api('/api/admin/settings',o);toast(j.success?'Saved':(j.error||'Error'),j.success);if(j.success)setTimeout(()=>location.reload(),600)}
+tabs('.nav button', 't');
+function rp(id) {
+  const v = prompt('Naya password (kam se kam 6 character):');
+  if (v) act('/api/admin/user/' + id, { action: 'reset_pw', value: v }, 'Password badal gaya', false);
+}
+async function saveSet() {
+  const o = {};
+  for (const k of ['default_limit', 'yt', 'ig', 'telegram', 'website', 'whatsapp', 'help_text', 'maintenance'])
+    o[k] = $('s_' + k).value;
+  const j = await api('/api/admin/settings', o);
+  toast(j.success ? 'Save ho gaya' : (j.error || 'Error'), j.success);
+  if (j.success) setTimeout(() => location.reload(), 600);
+}
 </script>{% endblock %}

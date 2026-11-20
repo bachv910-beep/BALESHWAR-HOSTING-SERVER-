@@ -1,39 +1,82 @@
-{% extends 'base.html' %}{% block title %}{{ site_name }}{% endblock %}
-{% block top %}<div class="top"><div class="brand"><i>{{ site_name[:1] }}</i><span>{{ site_name }}</span></div><a class="btn s" href="/logout">Logout</a></div>{% endblock %}
-{% block body %}
-<div class="row sp" style="margin-bottom:14px"><div><b style="font-size:17px">{{ u.name }}</b><div class="mu sm">{{ u.email }}</div></div>
-<span class="badge live">{{ total }} / {{ u.project_limit }} projects</span></div>
-{% if total >= u.project_limit %}<div class="err">Limit poori ho gayi. Zyada projects ke liye admin se contact karo (Help button).</div>{% endif %}
-
-{% macro plist(items, kind) %}
-{% for p in items %}<div class="card"><div class="row sp"><h3 style="word-break:break-all">{{ p.name }}</h3><span class="badge {{ p.live }}">{{ p.live }}</span></div>
-<div class="mu sm" style="margin:4px 0 10px">{{ p.label }}</div>
-{% if p.url %}<a class="sm" href="{{ p.url }}" target="_blank" style="word-break:break-all;display:block;margin-bottom:10px">{{ p.url }}</a>{% endif %}
-<div class="row"><a class="btn p s" href="/project/{{ p.id }}">Manage</a>{% if p.url %}<button class="btn s" data-u="{{ p.url }}" onclick="navigator.clipboard.writeText(this.dataset.u);toast('Link copy ho gaya')">Copy link</button>{% endif %}</div></div>
-{% else %}<div class="card mu sm">Abhi koi {{ 'bot' if kind=='bot' else 'website' }} nahi hai.</div>{% endfor %}
-{% endmacro %}
-
-<div data-sec="bot"><div class="row sp"><h2 style="margin:6px 0">Bot Hosting</h2><button class="btn p s" onclick="newP('bot')">＋ New Bot</button></div>
-<p class="mu sm" style="margin-bottom:12px">Telegram / Discord / koi bhi bot ya script. Console aur live logs milenge.</p>{{ plist(bots,'bot') }}</div>
-<div data-sec="site" class="hide"><div class="row sp"><h2 style="margin:6px 0">Website Hosting</h2><button class="btn p s" onclick="newP('site')">＋ New Website</button></div>
-<p class="mu sm" style="margin-bottom:12px">HTML / JSON / Python / Node web. Public link milta hai.</p>{{ plist(sites,'site') }}</div>
-<div data-sec="review" class="hide"><h2 style="margin-top:6px">Review do</h2><div class="card"><div class="pick" id="stars">{% for i in range(1,6) %}<span data-v="{{ i }}" class="{{ 'on' if review and review.rating>=i else '' }}">★</span>{% endfor %}</div>
-<textarea id="rtext" rows="3" placeholder="Apna experience likho..." style="font-family:inherit;font-size:16px;margin-top:8px">{{ review.text if review else '' }}</textarea><button class="btn p w" onclick="sendReview()">Submit</button></div></div>
-
-<div class="sheet" id="newM"><div class="pn"><h3 id="newT" style="margin-bottom:14px">New</h3>
-<label>Naam</label><input id="pn" placeholder="my-project" maxlength="40"><input type="hidden" id="pk">
-<div class="g2"><button class="btn" onclick="closeM('newM')">Cancel</button><button class="btn p" onclick="createP()">Create</button></div></div></div>
+{% extends 'base.html' %}
+{% block title %}{{ site_name }}{% endblock %}
+{% block top %}
+<div class="top">
+  <div class="brand"><i>{{ site_name[:1] }}</i><span>{{ site_name }}</span></div>
+  <a class="btn s" href="/logout">Logout</a>
+</div>
 {% endblock %}
-{% block nav %}<div class="nav">
-<button data-t="bot"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M9 13h.01M15 13h.01"/></svg>Bots</button>
-<button data-t="site"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Websites</button>
-<button data-t="review"><svg viewBox="0 0 24 24"><path d="m12 3 2.700 5.500 6 .9-4.400 4.200 1 6-5.300-2.800-5.300 2.800 1-6L3.300 9.400l6-.9z"/></svg>Review</button>
-<a href="https://wa.me/{{ S.whatsapp }}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.800 7L4 20l1.100-4.600A8 8 0 1 1 21 12z"/></svg>Help</a></div>{% endblock %}
+
+{% macro plist(items, kind) -%}
+{% for p in items %}
+<div class="card">
+  <div class="row sp"><h3 style="word-break:break-all">{{ p.name }}</h3><span class="badge {{ p.live }}">{{ p.live }}</span></div>
+  <div class="mu sm" style="margin:4px 0 10px">{{ p.label }}</div>
+  {% if p.url %}<a class="sm" href="{{ p.url }}" target="_blank" style="display:block;word-break:break-all;margin-bottom:12px">{{ p.url }}</a>{% endif %}
+  <div class="row">
+    <a class="btn p s" href="/project/{{ p.id }}">Manage</a>
+    {% if p.url %}<button class="btn s" type="button" data-u="{{ p.url }}" onclick="copyTxt(this.dataset.u)">Link copy</button>{% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card mu sm">Abhi koi {{ 'bot' if kind == 'bot' else 'website' }} nahi hai.</div>
+{% endfor %}
+{%- endmacro %}
+
+{% block body %}
+<div class="card row sp">
+  <div style="min-width:0"><b style="font-size:17px">{{ u.name }}</b><div class="mu sm" style="word-break:break-all">{{ u.email }}</div></div>
+  <span class="badge live">{{ total }} / {{ u.project_limit }} projects</span>
+</div>
+{% if total >= u.project_limit %}<div class="err">Aapki limit poori ho gayi ({{ u.project_limit }}). Aur chahiye to Help par WhatsApp karo.</div>{% endif %}
+
+<div data-sec="bot">
+  <div class="row sp"><h2>🤖 Bot Hosting</h2><button class="btn p s" type="button" onclick="newP('bot')">＋ Naya Bot</button></div>
+  <p class="mu sm" style="margin-bottom:10px">Telegram ya koi bhi bot / script. Console me command bhi chala sakte ho.</p>
+  {{ plist(bots, 'bot') }}
+</div>
+
+<div data-sec="site" class="hide">
+  <div class="row sp"><h2>🌐 Website Hosting</h2><button class="btn p s" type="button" onclick="newP('site')">＋ Nayi Website</button></div>
+  <p class="mu sm" style="margin-bottom:10px">HTML, JSON ya Python/Node web app. Public link milta hai.</p>
+  {{ plist(sites, 'site') }}
+</div>
+
+<div data-sec="review" class="hide">
+  <h2>⭐ Review & Rating</h2>
+  {% include 'rate_form.html' %}
+  <p class="mu sm" style="margin-top:8px">Sab reviews dekhne ke liye home page par jao.</p>
+</div>
+
+<div class="sheet" id="newM"><div class="pn">
+  <h3 id="newT" style="margin-bottom:12px">Naya</h3>
+  <input id="pn" placeholder="jaise my-bot" maxlength="40" autocomplete="off" autocapitalize="off">
+  <input type="hidden" id="pk">
+  <div class="g2"><button class="btn" type="button" onclick="closeM('newM')">Cancel</button><button class="btn p" type="button" onclick="createP()">Create</button></div>
+</div></div>
+{% endblock %}
+
+{% block nav %}
+<div class="nav">
+  <button data-t="bot"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M9 13h.01M15 13h.01"/></svg>Bot</button>
+  <button data-t="site"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Website</button>
+  <button data-t="review"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.4l6-.9z"/></svg>Review</button>
+  <a href="https://wa.me/{{ S.whatsapp }}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>Help</a>
+</div>
+{% endblock %}
+
 {% block js %}<script>
-tabs('.nav button','t');
-let rating={{ review.rating if review else 5 }};
-document.querySelectorAll('#stars span').forEach(s=>s.onclick=()=>{rating=+s.dataset.v;document.querySelectorAll('#stars span').forEach(e=>e.classList.toggle('on',+e.dataset.v<=rating))});
-async function sendReview(){const j=await api('/api/review',{rating,text:$('rtext').value});toast(j.success?'Review save ho gaya':(j.error||'Error'),j.success)}
-function newP(k){$('pk').value=k;$('newT').textContent=k=='bot'?'New Bot':'New Website';$('pn').value='';openM('newM')}
-async function createP(){const j=await api('/api/projects',{name:$('pn').value,kind:$('pk').value});if(j.success)location.href='/project/'+j.id;else toast(j.error,false)}
+tabs('.nav button', 't');
+window.getR = initStars('#stars', {{ mine.rating if mine else 0 }});
+function newP(k) {
+  $('pk').value = k;
+  $('newT').textContent = k === 'bot' ? 'Naya Bot' : 'Nayi Website';
+  $('pn').value = '';
+  openM('newM');
+  setTimeout(() => $('pn').focus(), 150);
+}
+async function createP() {
+  const j = await api('/api/projects', { name: $('pn').value.trim(), kind: $('pk').value });
+  if (j.success) location.href = '/project/' + j.id; else toast(j.error, false);
+}
 </script>{% endblock %}

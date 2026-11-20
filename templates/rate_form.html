@@ -1,0 +1,12 @@
+<div class="card">
+  <h3>{{ 'Aapka review update karo' if mine else 'Review aur star rating do' }}</h3>
+  <p class="mu sm" style="margin:4px 0 8px">Bina login ke bhi de sakte ho.</p>
+  <div class="pick" id="stars">{% for i in range(1,6) %}<span data-v="{{ i }}"{% if mine and mine.rating >= i %} class="on"{% endif %}>★</span>{% endfor %}</div>
+  {% if not me %}
+  <label style="margin-top:10px">Naam (optional)</label>
+  <input id="rname" maxlength="30" placeholder="Guest" value="{{ mine.name if mine else '' }}" autocomplete="nickname">
+  {% endif %}
+  <label>Kaisa laga? (optional)</label>
+  <textarea id="rtext" rows="3" maxlength="300" placeholder="Apna experience likho...">{{ mine.text if mine else '' }}</textarea>
+  <button class="btn p w" type="button" onclick="sendRating(window.getR)">{{ 'Update karo' if mine else 'Submit karo' }}</button>
+</div>

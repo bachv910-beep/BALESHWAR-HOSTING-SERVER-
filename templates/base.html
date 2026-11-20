@@ -1,8 +1,25 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07110c">
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#03170b">
 <title>{% block title %}{{ site_name }}{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
-<div class="app">{% block top %}{% endblock %}{% block body %}{% endblock %}{% include 'footer.html' %}</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app">
+{% block top %}{% endblock %}
+{% block body %}{% endblock %}
+{% include 'footer.html' %}
+</div>
 {% block nav %}{% endblock %}
-{% if S.whatsapp %}<a class="wa" href="https://wa.me/{{ S.whatsapp }}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.200 14.200c-.2.600-1.300 1.200-1.800 1.200-.5.100-1 .2-3.300-.7-2.800-1.200-4.600-4-4.700-4.200-.1-.2-1.100-1.500-1.100-2.800s.7-2 1-2.300c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.100c.1.200.1.400 0 .5l-.4.600-.3.400c-.1.200-.3.300-.1.600.2.300.8 1.300 1.700 2.100 1.100 1 2.100 1.300 2.400 1.500.3.100.5.100.6-.1l.8-1c.2-.3.4-.2.600-.1l2 .9c.3.100.5.200.6.300.1.200.1.800-.1 1.400z"/></svg></a>{% endif %}
-<script src="{{ url_for('static', filename='app.js') }}"></script>{% block js %}{% endblock %}</body></html>
+{% if S.whatsapp %}
+<a class="wa" href="https://wa.me/{{ S.whatsapp }}" target="_blank" rel="noopener" aria-label="WhatsApp helpline">
+<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/></svg>
+</a>
+{% endif %}
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block js %}{% endblock %}
+</body>
+</html>

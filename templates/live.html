@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ p.name }} · LIVE{% endblock %}
+{% block top %}<div class="top"><div class="brand"><i>{{ site_name[:1] }}</i><span>{{ site_name }}</span></div></div>{% endblock %}
+{% block body %}
+<div class="card live-card">
+  <div class="live-ic">✅</div>
+  <h1 style="font-size:24px;margin-top:10px">{{ p.name }}</h1>
+  <p class="livetxt">LIVE · successfully run ho raha hai</p>
+  <span class="badge running">running</span>
+  <p class="mu sm" style="margin-top:14px">Ye bot / script hai, isliye yahan web page nahi dikhta. Ye server par chal raha hai.</p>
+</div>
+{% endblock %}
