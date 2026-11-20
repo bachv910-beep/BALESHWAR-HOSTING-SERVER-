@@ -1,14 +1,15 @@
-# VIP Hosting (Render)
+# VIP Hosting
 
-Environment me kuch set karna zaruri nahi (secret key apne aap banti hai).
-Optional: SITE_NAME, DATA_DIR=/var/data (Render Disk lagao to data redeploy par safe rahega).
+No environment variables are required. The secret key is generated and stored automatically.
+Optional: SITE_NAME, DATA_DIR (set DATA_DIR to a Render Disk path such as /var/data to keep data across redeploys).
 
 Admin panel: https://<your-app>.onrender.com/admin-penel
-Pehli baar jo Gmail + password daaloge wahi hamesha ke liye admin banega.
+The first Gmail and password entered there become the admin account permanently.
 
 Start command: gunicorn -w 1 --threads 16 --timeout 120 -b 0.0.0.0:$PORT app:app
 
-Public reviews: home page par koi bhi (login ke bina) star rating aur review de sakta hai.
-Hosting:
-- Bot Hosting: Python/Node bot ya script. Console me command, password, Ctrl+C sab chalta hai.
-- Website Hosting: HTML/JSON/CSS/JS ya web app. Public link milta hai.
+Ratings: anyone can rate and review from the home page, even without logging in.
+
+Hosting types:
+- Bot Hosting: Python or Node.js bots and scripts. Console commands, password prompts and Ctrl+C all work.
+- Website Hosting: HTML / JSON / CSS / JS sites, or Python / Node web apps. You get a public link.
