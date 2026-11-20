@@ -1,6 +1,6 @@
 :root{--bg:#03170b;--s1:#0b2a17;--s2:#12391f;--s3:#1a5030;--line:#26704a;--tx:#f2fff6;--mu:#b4f0cb;--g:#4dff92;--g2:#16c963;--red:#ff7070;--amb:#ffd166}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-[hidden]{display:none!important}
+[hidden],.hide{display:none!important}
 html{background:var(--bg);-webkit-text-size-adjust:100%}
 body{color:var(--tx);font:15px/1.5 -apple-system,"Segoe UI",Roboto,system-ui,sans-serif;min-height:100vh;min-height:100dvh;
   background:radial-gradient(120% 55% at 50% -8%,#1f8f4d 0%,rgba(3,23,11,0) 62%),var(--bg);background-attachment:fixed}
@@ -111,3 +111,5 @@ input:focus,select:focus,textarea:focus{border-color:var(--g);box-shadow:0 0 0 3
 .toast.bad{border-color:var(--red)}
 .sheet.on~.toast{z-index:100}
 @media (max-width:420px){.kpi{grid-template-columns:1fr 1fr 1fr}.stat b{font-size:22px}.g2{grid-template-columns:1fr 1fr}}
+
+label.btn{margin:0}
