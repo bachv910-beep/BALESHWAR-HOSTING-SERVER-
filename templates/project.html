@@ -2,7 +2,7 @@
 {% block title %}{{ p.name }}{% endblock %}
 {% block top %}
 <div class="top">
-  <a class="btn s" href="{{ '/admin-penel' if admin else '/dashboard' }}">← Peeche</a>
+  <a class="btn s" href="{{ '/admin-penel' if admin else '/dashboard' }}">← Back</a>
   <div class="brand" style="min-width:0"><span>{{ p.name }}</span></div>
   <span class="badge {{ p.live }}" id="badge">{{ p.live }}</span>
 </div>
@@ -10,14 +10,14 @@
 
 {% block body %}
 {% if admin %}<div class="note">Admin view · Owner: <b>{{ owner.email if owner else '?' }}</b></div>{% endif %}
-{% if p.blocked %}<div class="err">Ye project admin ne block kiya hai.</div>{% endif %}
+{% if p.blocked %}<div class="err">This project has been blocked by the admin.</div>{% endif %}
 
 <div class="card">
   <div class="mu sm">{{ p.label }}{% if p.runtime != 'static' and p.port %} · PORT {{ p.port }}{% endif %}</div>
   {% if p.url %}
   <label style="margin-top:12px">Public link</label>
   <a href="{{ p.url }}" target="_blank" style="display:block;word-break:break-all;font-size:14px;margin-bottom:10px">{{ p.url }}</a>
-  <button class="btn s" type="button" data-u="{{ p.url }}" onclick="copyTxt(this.dataset.u)">Link copy karo</button>
+  <button class="btn s" type="button" data-u="{{ p.url }}" onclick="copyTxt(this.dataset.u)">Copy link</button>
   {% endif %}
   <div class="g2" style="margin-top:14px">
     {% if p.runtime != 'static' %}
@@ -28,7 +28,7 @@
     <button class="btn d" type="button" onclick="delP()">Delete</button>
   </div>
   {% if admin %}
-  <button class="btn d w" type="button" style="margin-top:10px" onclick="act('/api/admin/project/{{ p.id }}/block', {}, 'Ho gaya')">{{ 'Unblock karo' if p.blocked else 'Block karo' }}</button>
+  <button class="btn d w" type="button" style="margin-top:10px" onclick="act('/api/admin/project/{{ p.id }}/block', {}, 'Done')">{{ 'Unblock' if p.blocked else 'Block' }}</button>
   {% endif %}
 </div>
 
@@ -42,14 +42,14 @@
 <div data-sec="console">
   <div class="term" id="term">Loading…</div>
   <form class="tin" onsubmit="event.preventDefault(); sendIn();">
-    <input id="cin" placeholder="command ya password likho…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
+    <input id="cin" placeholder="Type a command or password…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
     <button class="btn p" type="submit">Enter</button>
   </form>
   <div class="row" style="margin-top:10px">
     <button class="btn s" type="button" onclick="ctrlC()">Ctrl+C</button>
     <button class="btn s" type="button" onclick="clearL()">Clear</button>
   </div>
-  <div class="note" style="margin-top:12px">Bot chal raha ho to yahan likha text seedha bot ko jaata hai (password / Enter jaise Termux me). Band ho to likha command chalta hai, jaise <b>pip install telebot</b> ya <b>python main.py</b>.</div>
+  <div class="note" style="margin-top:12px">While the bot is running, whatever you type here goes straight to it (for passwords or Enter, like in Termux). When it is stopped, the text runs as a command, for example <b>pip install telebot</b> or <b>python main.py</b>.</div>
 </div>
 {% endif %}
 
@@ -59,30 +59,30 @@
     <button class="btn s" type="button" onclick="newFolder()">📁 Folder</button>
     <button class="btn s" type="button" onclick="newFile()">📄 File</button>
   </div>
-  <div class="crumb"><button class="btn s" type="button" id="up" hidden>⬅ Peeche</button><div id="crumb"></div></div>
+  <div class="crumb"><button class="btn s" type="button" id="up" hidden>⬅ Up</button><div id="crumb"></div></div>
   <div class="card" style="padding:4px 14px"><div id="flist"></div></div>
-  <p class="mu sm" style="margin-top:6px">Ek saath kai files chun sakte ho. Zip upload karo to apne aap extract ho jaayegi. {{ 'Website ki HTML file upload karte hi link live ho jaata hai.' if p.runtime == 'static' else 'Requirements.txt na ho to apne aap ban jaati hai.' }}</p>
+  <p class="mu sm" style="margin-top:6px">You can select several files at once. Upload a zip and it is extracted automatically. {{ 'As soon as you upload an HTML file, the link goes live.' if p.runtime == 'static' else 'If there is no requirements.txt, one is created automatically.' }}</p>
 </div>
 
 <div data-sec="settings" class="hide">
   <div class="card">
     {% if p.runtime == 'static' %}
-    <label>Main page (kaunsi HTML pehle khule)</label>
+    <label>Main page (which HTML file opens first)</label>
     <input id="mf" value="{{ p.main_file }}" placeholder="index.html" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <div class="note">Khali chhodo to index.html ya pehli HTML file apne aap khulegi.</div>
+    <div class="note">Leave it empty to open index.html, or the first HTML file.</div>
     {% else %}
     <label>Main file (app.py / main.py)</label>
     <input id="mf" value="{{ p.main_file }}" placeholder="main.py" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <label>Custom command (khali chhodo to apne aap chalega)</label>
+    <label>Custom command (leave empty to run automatically)</label>
     <input id="cmd" value="{{ p.command }}" placeholder="python main.py" autocapitalize="off" autocorrect="off" spellcheck="false">
     {% endif %}
     <button class="btn p w" type="button" onclick="saveS()">Save</button>
-    <p class="mu sm" style="margin-top:10px">Settings badalne ke baad Restart karo.</p>
+    <p class="mu sm" style="margin-top:10px">After changing settings, press Restart.</p>
   </div>
 </div>
 
 <div class="sheet" id="nm"><form class="pn" onsubmit="nmOk(event)">
-  <h3 id="nmT" style="margin-bottom:12px">Naam</h3>
+  <h3 id="nmT" style="margin-bottom:12px">Name</h3>
   <input id="nmI" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="120">
   <div class="g2">
     <button class="btn" type="button" onclick="closeM('nm')">Cancel</button>
@@ -144,16 +144,16 @@ if ($('cin')) {
   });
 }
 
-/* ---------- start / stop / delete ---------- */
+/* ---------- start / stop / delete / settings ---------- */
 function showTab(n) { const b = document.querySelector('.seg button[data-s="' + n + '"]'); if (b) b.click(); }
 async function startP() {
   const j = await api('/api/projects/' + P + '/start', {});
-  if (j.success) { toast('Start ho raha hai… pehli baar me packages install hongi'); showTab('console'); setTimeout(poll, 600); }
+  if (j.success) { toast('Starting… the first start installs packages, so it can take a minute'); showTab('console'); setTimeout(poll, 600); }
   else toast(j.error, false);
 }
 async function stopP() {
   const j = await api('/api/projects/' + P + '/stop', {});
-  toast(j.success ? 'Stop ho gaya' : j.error, j.success);
+  toast(j.success ? 'Stopped' : j.error, j.success);
   setTimeout(poll, 400);
 }
 async function restartP() {
@@ -161,14 +161,14 @@ async function restartP() {
   setTimeout(startP, 700);
 }
 async function delP() {
-  if (!confirm('Pura project delete karna hai?')) return;
+  if (!confirm('Delete this project completely?')) return;
   const j = await api('/api/projects/' + P + '/delete', {});
   if (j.success) location.href = BACK; else toast(j.error, false);
 }
 async function saveS() {
   const body = { main_file: $('mf').value.trim(), command: $('cmd') ? $('cmd').value.trim() : '' };
   const j = await api('/api/projects/' + P + '/settings', body);
-  toast(j.success ? 'Save ho gaya. Ab Restart karo.' : j.error, j.success);
+  toast(j.success ? 'Saved. Now press Restart.' : j.error, j.success);
   if (j.success) setTimeout(() => location.reload(), 900);
 }
 
@@ -183,7 +183,7 @@ function askName(title, val, cb) {
 async function nmOk(e) {
   e.preventDefault();
   const v = $('nmI').value.trim();
-  if (!v) { toast('Naam likho', false); return; }
+  if (!v) { toast('Please enter a name', false); return; }
   closeM('nm');
   if (nmCb) { const f = nmCb; nmCb = null; await f(v); }
 }
@@ -202,7 +202,7 @@ async function loadF() {
       (isD ? '' : ' <span class="mu sm">' + (f.size / 1024).toFixed(1) + ' KB</span>') + '</span>' +
       '<button class="btn s" type="button" data-ren="' + esc(p) + '">✏</button>' +
       '<button class="btn s d" type="button" data-del="' + esc(p) + '">🗑</button></div>';
-  }).join('') : '<div class="mu sm pad">Yahan abhi koi file ya folder nahi hai.</div>';
+  }).join('') : '<div class="mu sm pad">There are no files or folders here yet.</div>';
 }
 $('crumb').addEventListener('click', e => { const a = e.target.closest('[data-d]'); if (a) goD(a.dataset.d); });
 $('up').addEventListener('click', () => goD(dir.split('/').slice(0, -1).join('/')));
@@ -220,48 +220,48 @@ async function upload() {
   const fd = new FormData();
   for (const f of input.files) fd.append('file', f);
   fd.append('dir', dir);
-  toast('Upload ho raha hai…');
+  toast('Uploading…');
   try {
     const r = await fetch('/api/projects/' + P + '/upload', { method: 'POST', body: fd });
     const j = await r.json();
     input.value = '';
     if (j.success) {
-      toast((j.count || 0) + ' file upload' + (j.zips ? ' · zip extract ho gayi' : '') + ' · ' + (j.info || ''));
+      toast((j.count || 0) + ' file(s) uploaded' + (j.zips ? ' · zip extracted' : '') + (j.info ? ' · ' + j.info : ''));
       if (j.changed) setTimeout(() => location.reload(), 1400); else loadF();
     } else toast(j.error, false);
   } catch (e) {
     input.value = '';
-    toast('Upload fail ho gaya, dobara try karo', false);
+    toast('Upload failed, please try again', false);
   }
 }
 function newFolder() {
-  askName('Naya folder ka naam', '', async n => {
+  askName('New folder name', '', async n => {
     const j = await api('/api/projects/' + P + '/files/mkdir', { path: join(dir, n) });
-    if (j.success) { toast('Folder ban gaya'); goD(j.path); } else toast(j.error, false);
+    if (j.success) { toast('Folder created'); goD(j.path); } else toast(j.error, false);
   });
 }
 function newFile() {
-  askName('Nayi file ka naam (jaise main.py)', '', async n => {
+  askName('New file name (e.g. main.py)', '', async n => {
     const j = await api('/api/projects/' + P + '/files/new', { path: join(dir, n) });
     if (j.success) { await loadF(); editF(j.path); } else toast(j.error, false);
   });
 }
 function renF(p) {
-  askName('Naya naam', p.split('/').pop(), async n => {
+  askName('New name', p.split('/').pop(), async n => {
     const j = await api('/api/projects/' + P + '/files/rename', { path: p, new: n });
-    if (j.success) { toast('Naam badal gaya'); if (j.changed) setTimeout(() => location.reload(), 900); else loadF(); }
+    if (j.success) { toast('Renamed'); if (j.changed) setTimeout(() => location.reload(), 900); else loadF(); }
     else toast(j.error, false);
   });
 }
 async function delF(p) {
-  if (!confirm(p + ' delete karna hai?')) return;
+  if (!confirm('Delete ' + p + '?')) return;
   const j = await api('/api/projects/' + P + '/files/delete', { path: p });
-  if (j.success) { toast('Delete ho gaya'); if (j.changed) setTimeout(() => location.reload(), 900); else loadF(); }
+  if (j.success) { toast('Deleted'); if (j.changed) setTimeout(() => location.reload(), 900); else loadF(); }
   else toast(j.error, false);
 }
 async function editF(p) {
   const j = await fetch('/api/projects/' + P + '/files/view?path=' + encodeURIComponent(p))
-    .then(r => r.json()).catch(() => ({ success: false, error: 'Net nahi chal raha' }));
+    .then(r => r.json()).catch(() => ({ success: false, error: 'Network problem, please try again' }));
   if (!j.success) { toast(j.error, false); return; }
   cur = p;
   $('edn').textContent = p;
@@ -271,7 +271,7 @@ async function editF(p) {
 async function saveF() {
   const j = await api('/api/projects/' + P + '/files/save', { path: cur, content: $('edt').value });
   if (j.success) {
-    toast('Save ho gaya');
+    toast('Saved');
     closeM('ed');
     if (j.changed) setTimeout(() => location.reload(), 900); else loadF();
   } else toast(j.error, false);

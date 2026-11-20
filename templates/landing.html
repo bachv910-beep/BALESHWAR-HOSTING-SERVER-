@@ -8,15 +8,15 @@
 {% endblock %}
 {% block body %}
 <div class="hero">
-  <h1>Apna bot aur website <span class="hl">yahin host karo</span></h1>
-  <p class="mu">Telegram bot ho ya HTML website, file ya zip upload karo aur chalu. Console aur live logs saath me.</p>
-  <div class="row" style="margin-top:16px"><a class="btn p" href="/signup">Free account banao</a><a class="btn" href="/login">Login</a></div>
+  <h1>Host your bot and website <span class="hl">right here</span></h1>
+  <p class="mu">Upload a file or a zip for a Telegram bot or an HTML website and start it. Console and live logs are included.</p>
+  <div class="row" style="margin-top:16px"><a class="btn p" href="/signup">Create a free account</a><a class="btn" href="/login">Login</a></div>
 </div>
 
-<h2>Kya host hota hai</h2>
+<h2>What you can host</h2>
 <div class="g2">
-  <div class="card"><h3>🤖 Bot Hosting</h3><p class="mu sm" style="margin-top:6px">Telegram, Discord ya koi bhi Python bot. Termux jaisa console, password bhi wahin likho. 24/7 auto-restart.</p></div>
-  <div class="card"><h3>🌐 Website Hosting</h3><p class="mu sm" style="margin-top:6px">HTML, JSON, CSS, JS ya web app. Public link milta hai jo kisi ko bhi bhej sakte ho.</p></div>
+  <div class="card"><h3>🤖 Bot Hosting</h3><p class="mu sm" style="margin-top:6px">Telegram, Discord or any Python bot. Termux-style console, and you can type passwords right into it. Auto-restart 24/7.</p></div>
+  <div class="card"><h3>🌐 Website Hosting</h3><p class="mu sm" style="margin-top:6px">HTML, JSON, CSS, JS or a Python/Node web app. You get a public link to share with anyone.</p></div>
 </div>
 
 <h2>Reviews & Ratings</h2>
@@ -26,7 +26,7 @@
       <div class="big">{{ avg }}</div>
       <div class="stars" style="font-size:18px;margin-top:6px">{{ '★' * (avg|round|int) }}{{ '☆' * (5 - (avg|round|int)) }}</div>
     </div>
-    <div class="mu sm" style="text-align:right">{{ total }} log ne rating di</div>
+    <div class="mu sm" style="text-align:right">{{ total }} rating{{ '' if total == 1 else 's' }}</div>
   </div>
   <div class="bars">
     {% for i in [5,4,3,2,1] %}
@@ -37,7 +37,7 @@
 
 {% include 'rate_form.html' %}
 
-<h2>Sab reviews ({{ total }})</h2>
+<h2>All reviews ({{ total }})</h2>
 {% for r in ratings %}
 <div class="card">
   <div class="row sp"><span class="stars">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</span><span class="mu sm">{{ r.created[:10] }}</span></div>
@@ -45,7 +45,7 @@
   <div class="mu sm">— {{ r.name }}</div>
 </div>
 {% else %}
-<div class="card mu sm">Abhi koi review nahi hai. Pehla review tum do!</div>
+<div class="card mu sm">No reviews yet. Be the first one to review!</div>
 {% endfor %}
 {% endblock %}
 {% block js %}<script>window.getR = initStars('#stars', {{ mine.rating if mine else 0 }});</script>{% endblock %}
